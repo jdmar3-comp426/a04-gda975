@@ -32,17 +32,24 @@ app.post("/app/new/", (req, res) => {
 
 // READ a list of all users (HTTP method GET) at endpoint /app/users/
 app.get("/app/users/", (req, res) => {	
-	const stmt = db.prepare("SELECT * FROM userinfo").all();
-	res.status(200).json(stmt);
+	const stmt = db.prepare("SELECT * FROM userinfo");
+	const all = stmt.all();
+	res.status(200).json(all);
 });
 
 // READ a single user (HTTP method GET) at endpoint /app/user/:id
 app.get("/app/user/:id/", (req, res) => {
-	const stmt = db.prepare("SELECT * FROM userinfo WHERE id = ?").get(req.params.id);
-	res.status(200).json(stmt);
+	const stmt = db.prepare("SELECT * FROM userinfo WHERE id = ?");
+	const user = stmt.get(req.params.id);
+	res.status(200).json(user);
 });
 
 // UPDATE a single user (HTTP method PATCH) at endpoint /app/update/user/:id
+app.patch("/app/update/user/:id/", (req, res) => {
+	const stmt = db.prepare("UPDATE userinfo SET user = COALESCE(?,user), pass = COALESCE(?,pass) WHERE id = ?");
+	const info = stmt.run(req.body.user, md5(req.body.pass), req.params.id);
+	res.status(200).json({"message" : info.changes + " record updated: ID " + req.params.id + " (200)"});
+});
 
 // DELETE a single user (HTTP method DELETE) at endpoint /app/delete/user/:id
 
